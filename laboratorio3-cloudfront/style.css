@@ -1,0 +1,11 @@
+/* RECURSO TIPO: CSS_BASE
+   Este archivo define la apariencia visual del sitio. */
+body {
+   font-family: Arial;
+   background-color: #f5f5f5;
+   text-align: center;
+}
+
+h1 {
+   color: #ff9900;
+}
