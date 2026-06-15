@@ -1,6 +1,7 @@
-# Guia completa de Terraform para los 4 laboratorios
+# Guia completa de Terraform para los 5 laboratorios
 
 Esta guia centraliza el contenido de:
+- `laboratorio-1`
 - `lab-api-rest`
 - `laboratorio2-s3`
 - `laboratorio3-cloudfront`
@@ -18,7 +19,135 @@ En casi todos los proyectos el orden logico es:
 
 ---
 
-# 1. Lab API REST
+# 1. Laboratorio 1
+
+## Que hace
+Este laboratorio es la base inicial del recorrido: prepara acceso a AWS, verifica S3 y deja un proyecto Terraform sencillo para estudiar la estructura minima.
+
+## Orden practico de creacion
+1. `terraform/provider.tf`
+2. `terraform/variables.tf`
+3. `terraform/main.tf`
+4. `terraform/outputs.tf`
+
+## Idea principal de la arquitectura
+- Terraform se conecta a AWS con el provider.
+- Un bucket S3 se crea con nombre unico.
+- Se agregan controles basicos de seguridad.
+- Los outputs muestran el resultado final.
+
+## Fragmentos completos
+
+### `laboratorio-1/terraform/provider.tf`
+```hcl
+terraform {
+  # CONFIGURACION BASE DE TERRAFORM
+  # Define la version minima de Terraform y el provider AWS.
+  required_version = ">= 1.5"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  # PROVEEDOR AWS
+  # Region donde se creara el bucket de S3.
+  region = var.aws_region
+}
+```
+
+### `laboratorio-1/terraform/variables.tf`
+```hcl
+variable "aws_region" {
+  # VARIABLE TIPO: AWS_REGION
+  # Region donde se desplegara el laboratorio.
+  description = "Region AWS donde se desplegara el laboratorio 1"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "bucket_prefix" {
+  # VARIABLE TIPO: BUCKET_PREFIX
+  # Prefijo usado para generar un nombre unico de bucket S3.
+  description = "Prefijo del bucket S3"
+  type        = string
+  default     = "laboratorio1-terraform-"
+}
+```
+
+### `laboratorio-1/terraform/main.tf`
+```hcl
+// RECURSO TIPO: AWS_S3_BUCKET
+// Crea el bucket base del laboratorio 1.
+// Se usa bucket_prefix para que AWS complete un nombre unico.
+resource "aws_s3_bucket" "laboratorio1" {
+  bucket_prefix = var.bucket_prefix
+}
+
+// RECURSO TIPO: AWS_S3_BUCKET_PUBLIC_ACCESS_BLOCK
+// Bloquea el acceso publico al bucket para mantenerlo privado.
+resource "aws_s3_bucket_public_access_block" "laboratorio1" {
+  bucket = aws_s3_bucket.laboratorio1.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+// RECURSO TIPO: AWS_S3_BUCKET_VERSIONING
+// Habilita versionado para conservar cambios de objetos.
+resource "aws_s3_bucket_versioning" "laboratorio1" {
+  bucket = aws_s3_bucket.laboratorio1.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+// RECURSO TIPO: AWS_S3_BUCKET_SERVER_SIDE_ENCRYPTION_CONFIGURATION
+// Habilita cifrado del lado del servidor con AES256.
+resource "aws_s3_bucket_server_side_encryption_configuration" "laboratorio1" {
+  bucket = aws_s3_bucket.laboratorio1.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+```
+
+### `laboratorio-1/terraform/outputs.tf`
+```hcl
+output "bucket_name" {
+  # SALIDA PRINCIPAL
+  # Nombre final del bucket generado por AWS.
+  value = aws_s3_bucket.laboratorio1.bucket
+}
+
+output "bucket_arn" {
+  # SALIDA SECUNDARIA
+  # ARN del bucket para usarlo en otras configuraciones.
+  value = aws_s3_bucket.laboratorio1.arn
+}
+```
+
+## Resumen de examen
+- `bucket_prefix` permite que AWS agregue un sufijo unico.
+- `public_access_block` ayuda a dejar el bucket privado.
+- `versioning` permite mantener historial de objetos.
+- `server_side_encryption` protege los datos almacenados.
+- `terraform init` prepara el directorio.
+- `terraform validate` revisa sintaxis y configuracion basica.
+
+---
+
+# 2. Lab API REST
 
 ## Que hace
 Este laboratorio crea una API REST con API Gateway y una Lambda en Python.
@@ -324,7 +453,7 @@ output "saludar_url" {
 
 ---
 
-# 2. Laboratorio 2: S3 estatico
+# 3. Laboratorio 2: S3 estatico
 
 ## Que hace
 Publica un sitio web estatico desde un bucket S3.
@@ -458,7 +587,7 @@ output "website_url" {
 
 ---
 
-# 3. Laboratorio 3: CloudFront + S3
+# 4. Laboratorio 3: CloudFront + S3
 
 ## Que hace
 Toma un sitio estatico y lo sirve a traves de CloudFront usando S3 como origen.
@@ -644,7 +773,7 @@ output "cloudfront_url" {
 
 ---
 
-# 4. Laboratorio 4: API, Lambda y DynamoDB
+# 5. Laboratorio 4: API, Lambda y DynamoDB
 
 ## Que hace
 Este laboratorio expone dos endpoints REST con API Gateway:
@@ -1108,7 +1237,7 @@ boto3
 
 # Conclusiones generales
 
-## Conceptos que se repiten en los 4 laboratorios
+## Conceptos que se repiten en los 5 laboratorios
 - `provider`: dice a que AWS apuntar.
 - `resource`: crea un recurso real.
 - `output`: muestra datos utiles al terminar.
