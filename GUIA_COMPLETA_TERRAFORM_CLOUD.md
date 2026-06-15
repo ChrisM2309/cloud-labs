@@ -1251,3 +1251,29 @@ boto3
 3. Revisa los permisos.
 4. Revisa el punto de entrada.
 5. Verifica la salida final.
+
+## Comandos basicos de Terraform
+
+Usa estos comandos casi siempre en este orden:
+
+```bash
+terraform init
+terraform validate
+terraform apply
+terraform destroy
+```
+
+### Que hace cada comando
+
+- `terraform init`: inicializa el directorio, descarga providers y prepara Terraform.
+- `terraform validate`: revisa que la sintaxis y la configuracion esten correctas.
+- `terraform apply`: crea o actualiza los recursos definidos.
+- `terraform destroy`: elimina los recursos creados por Terraform.
+
+### Orden recomendado de uso
+
+1. Escribe o modifica el codigo.
+2. Ejecuta `terraform init` si es la primera vez o si cambiaste providers.
+3. Ejecuta `terraform validate` para revisar errores.
+4. Ejecuta `terraform apply` para desplegar.
+5. Ejecuta `terraform destroy` solo cuando quieras borrar la infraestructura.
